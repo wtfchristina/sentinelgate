@@ -1,0 +1,28 @@
+name: SentinelGate Supply-Chain Audit
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  audit-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      
+      - name: Install SentinelGate
+        run: |
+          pip install --upgrade pip
+          pip install .
+          
+      - name: Intercept & Audit Manifests
+        run: |
+          if [ -f requirements.txt ]; then
+            sentinelgate -f requirements.txt --threshold 0.45
+          else
+            echo "No requirements.txt found, skipping manifest audit."
+          fi
