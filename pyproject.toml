@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "sentinelgate"
 version = "0.1.0"
 description = "Pre-execution package firewall and agentic slopsquatting interceptor"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Christina Holt" }]
 dependencies = [
     "httpx>=0.27.0",
     "rich>=13.7.0",
