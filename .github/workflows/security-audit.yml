@@ -1,0 +1,42 @@
+name: SentinelGate Supply-Chain Gate
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install SentinelGate
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run Dependency Provenance Audit
+        run: |
+          if [ -f requirements.txt ]; then
+            sentinelgate -f requirements.txt --threshold 0.45 --sarif results.sarif
+          else
+            sentinelgate -p httpx -p rich --threshold 0.45 --sarif results.sarif
+          fi
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: always() && hashFiles("results.sarif") != ""
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: sentinelgate-slopsquat-audit
